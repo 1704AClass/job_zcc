@@ -1,0 +1,11 @@
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:21 +0800] "GET /pages/checkitem.html HTTP/1.1" 304 - http-bio-82-exec-2 184
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:21 +0800] "GET /css/style.css HTTP/1.1" 304 - http-bio-82-exec-6 65
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:21 +0800] "GET /plugins/font-awesome/css/font-awesome.min.css HTTP/1.1" 304 - http-bio-82-exec-1 123
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:21 +0800] "GET /plugins/elementui/index.css HTTP/1.1" 304 - http-bio-82-exec-3 150
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:21 +0800] "GET /js/axios-0.18.0.js HTTP/1.1" 304 - http-bio-82-exec-8 83
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:21 +0800] "GET /js/jquery.min.js HTTP/1.1" 304 - http-bio-82-exec-7 266
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:22 +0800] "GET /js/vue.js HTTP/1.1" 304 - http-bio-82-exec-5 304
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:22 +0800] "GET /plugins/elementui/index.js HTTP/1.1" 304 - http-bio-82-exec-4 520
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:23 +0800] "GET /plugins/elementui/fonts/element-icons.woff HTTP/1.1" 304 - http-bio-82-exec-5 73
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:23 +0800] "GET /favicon.ico HTTP/1.1" 404 973 http-bio-82-exec-5 10
+0:0:0:0:0:0:0:1 - - [20/Jan/2020:20:00:29 +0800] "POST /checkitem/findPage.do HTTP/1.1" 200 1383 http-bio-82-exec-4 6771

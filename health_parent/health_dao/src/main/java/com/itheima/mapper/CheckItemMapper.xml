@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <mapper namespace="com.itheima.mapper.CheckItemMapper">
+ 	<select id="pageQuery" resultType="com.itheima.pojo.CheckItem" parameterType="String">
+ 		select * from t_checkitem
+ 		<if test="value !=null and value.length>0">
+ 			where code = #{value} or name=#{value}
+ 		</if>
+ 	</select>
+ 	<delete id="dels" parameterType="Integer">
+ 		delete from t_checkitem where id=#{id}
+ 	</delete>
+ 	<delete id="deleteAssocication" parameterType="int">
+ 		delete from t_checkgroup_checkitem where checkitem_id=#{id}
+ 	</delete>
+ 	<!--根据检查组id查询检查项信息-->
+	<select id="findCheckItemById" resultType="com.itheima.pojo.CheckItem">
+		select * from t_checkitem where id in (select checkitem_id from t_checkgroup_checkitem where checkgroup_id=#{id})
+	</select>
+ </mapper>

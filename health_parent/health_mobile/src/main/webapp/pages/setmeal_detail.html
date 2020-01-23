@@ -84,7 +84,7 @@
             }
         },
         mounted(){
-            axios.post("/setmeal/findByid.do?id=" + id).then((response) => {
+            axios.post("/mobile/findByid.do?id=" + id).then((response) => {
                 if(response.data.flag){
                     this.setmeal = response.data.data;
                     this.imgUrl = this.setmeal.img;

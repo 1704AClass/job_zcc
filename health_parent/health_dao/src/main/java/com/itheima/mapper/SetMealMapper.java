@@ -10,7 +10,7 @@ public interface SetMealMapper {
 	public void add(Setmeal setmeal);
 	public void setSetmealAndCheckGroup(Map<String,Integer> map);
 	public Page<Setmeal> findByCondition(String queryString);
-	public List<Setmeal> findAll();
 	public Setmeal findByid(int id);
+	public List<Setmeal> findAll();
 	
 }

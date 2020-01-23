@@ -49,16 +49,6 @@ public class SetmealServiceImpl implements SetMealService{
     	 Page<Setmeal> page = setMealMapper.findByCondition(queryString);
          return new PageResult(page.getTotal(),page.getResult());
 	}
-	//day6的列表   t_setmeal 预约
-	public List<Setmeal> findAll() {
-		List<Setmeal> list = setMealMapper.findAll();
-		System.out.println(list);
-		return list;
-	}
-
-	public Setmeal findByid(int id) {
-		// TODO Auto-generated method stub
-		return setMealMapper.findByid(id);
-	}
+	
 
 }

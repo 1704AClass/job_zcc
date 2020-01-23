@@ -7,6 +7,22 @@
   </parent>
   <artifactId>health_mobile</artifactId>
   <packaging>war</packaging>
+  <dependencies>
+  	<dependency>
+  		<groupId>com.zcc</groupId>
+  		<artifactId>health_pojo</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.zcc</groupId>
+  		<artifactId>health_interface</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>servlet-api</artifactId>
+	</dependency>
+  </dependencies>
    <build>  
 	<plugins>	     
 	   <plugin>
@@ -22,20 +38,4 @@
 	  </plugin>
 	</plugins>  
   </build>
-   <dependencies>
-   	<dependency>
-   		<groupId>com.zcc</groupId>
-   		<artifactId>health_interface</artifactId>
-   		<version>0.0.1-SNAPSHOT</version>
-   	</dependency>
-   	<dependency>
-   		<groupId>com.zcc</groupId>
-   		<artifactId>health_pojo</artifactId>
-   		<version>0.0.1-SNAPSHOT</version>
-   	</dependency>
-   	<dependency>
-		<groupId>javax.servlet</groupId>
-		<artifactId>servlet-api</artifactId>
-	</dependency>
-   </dependencies>
 </project>

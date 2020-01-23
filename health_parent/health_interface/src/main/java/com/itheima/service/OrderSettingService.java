@@ -3,6 +3,7 @@ package com.itheima.service;
 import java.util.List;
 import java.util.Map;
 
+import com.itheima.entity.Result;
 import com.itheima.pojo.OrderSetting;
 
 public interface OrderSettingService {

@@ -1,6 +1,6 @@
 package com.ningmeng.testproducer;
 
-import com.ningmeng.test.config.RabbitConfig;
+import com.ningmeng.testproducer.config.RabbitConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -16,7 +16,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class rabbitmq {
 
     @Autowired
-    private RabbitTemplate rabbitTemplate;
+    RabbitTemplate rabbitTemplate;
+            ;
 
     @Test
     public void testSendByTopics(){

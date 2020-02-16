@@ -1,4 +1,4 @@
-package com.ningmeng;
+package com.ningmeng.manage_cms_client;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
- * Created by Lenovo on 2020/2/14.
+ * Created by Lenovo on 2020/2/16.
  */
 @SpringBootApplication
 @EntityScan("com.ningmeng.framework.domain.cms")//扫描实体类

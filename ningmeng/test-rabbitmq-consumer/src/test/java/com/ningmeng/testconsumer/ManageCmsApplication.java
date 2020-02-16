@@ -12,7 +12,6 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 //扫描类
 @ComponentScan(basePackages = {"com.ningmeng.testconsumer"})
-@ComponentScan(basePackages = {"com.ningmeng.producer"})
 @ComponentScan(basePackages = {"com.ningmeng.framework"})
 public class ManageCmsApplication {
     public static void main(String[]args){

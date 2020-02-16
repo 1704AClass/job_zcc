@@ -1,16 +1,21 @@
 package com.ningmeng.manage_cms.service;
 
+import com.alibaba.fastjson.JSON;
 import com.ningmeng.framework.domain.cms.CmsPage;
 import com.ningmeng.framework.domain.cms.request.CmsPageResult;
 import com.ningmeng.framework.domain.cms.request.QueryPageRequest;
 import com.ningmeng.framework.exception.ExceptionCast;
 import com.ningmeng.framework.model.response.*;
+import com.ningmeng.manage_cms.config.RabbitmqConfig;
 import com.ningmeng.manage_cms.dao.CmsPageRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -20,6 +25,8 @@ import java.util.Optional;
 public class PageService {
     @Autowired
     CmsPageRepository cmsPageRepository;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     //分页查询
 
@@ -121,5 +128,28 @@ public class PageService {
             return  new ResponseResult(CommonCode.SUCCESS);
         }
         return  new ResponseResult(CommonCode.FAIL);
+    }
+
+
+    //将页面html保存到页面物理路径
+    public ResponseResult postPage(String pageId){
+        sendPostPage(pageId);
+        return new ResponseResult(CommonCode.SUCCESS);
+    }
+
+    private void sendPostPage(String pageId) {
+        CmsPage cmsPage= this.getById(pageId);
+        if(cmsPage == null){
+            ExceptionCast.cast(CmsCode.CMS_ADDPAGE_EXISTS);
+        }
+
+        Map<String,String> msgMap=new HashMap<>();
+        msgMap.put("pageId",pageId);
+        //消息内容
+        String msg = JSON.toJSONString(msgMap);
+        //获取站点id作为routingKey
+        String siteId= cmsPage.getSiteId();
+        //发布消息
+        this.rabbitTemplate.convertAndSend(RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE,siteId, msg);
     }
 }

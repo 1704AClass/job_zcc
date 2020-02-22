@@ -1,9 +1,9 @@
 package com.ningmeng.framework.domain.course.ext;
 
+
 import com.ningmeng.framework.domain.course.CourseBase;
 import lombok.Data;
 import lombok.ToString;
-
 
 @Data
 @ToString

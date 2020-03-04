@@ -1,17 +1,16 @@
 package com.ningmeng.manage_course.controller;
 
 import com.ningmeng.api.cmsaip.CourseControllerApi;
-import com.ningmeng.framework.domain.course.CourseBase;
-import com.ningmeng.framework.domain.course.CourseMarket;
-import com.ningmeng.framework.domain.course.CoursePic;
-import com.ningmeng.framework.domain.course.Teachplan;
+import com.ningmeng.framework.domain.course.*;
 import com.ningmeng.framework.domain.course.ext.TeachplanNode;
 import com.ningmeng.framework.domain.course.request.CourseListRequest;
+import com.ningmeng.framework.model.response.CoursePublishResult;
 import com.ningmeng.framework.model.response.QueryResponseResult;
 import com.ningmeng.framework.model.response.ResponseResult;
 import com.ningmeng.manage_course.service.CourseServicec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 
 /**
  * Created by Lenovo on 2020/2/18.
@@ -94,5 +93,24 @@ public class CourseController implements CourseControllerApi {
     @DeleteMapping("/coursepic/deleteCoursePic")
     public ResponseResult deleteCoursePic(@RequestParam("courseId")String courseId) {
         return null;
+    }
+
+    @Override
+    @GetMapping("/courseview/{id}")
+    public CourseView courseview(@PathVariable("id") String id) {
+        return courseService.getCoruseView(id);
+    }
+
+    //课程预览
+    @Override
+    @PostMapping("/preview/{id}")
+    public CoursePublishResult preview(@PathVariable("id") String id) {
+        return courseService.preview(id);
+    }
+
+    @Override
+    @GetMapping("/publish/{id}")
+    public CoursePublishResult publish(@PathVariable("id") String id) {
+        return courseService.publish(id);
     }
 }

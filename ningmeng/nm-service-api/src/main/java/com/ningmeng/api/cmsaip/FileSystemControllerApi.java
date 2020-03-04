@@ -1,11 +1,13 @@
 package com.ningmeng.api.cmsaip;
 
 import com.ningmeng.framework.domain.filesystem.response.UploadFileResult;
+import io.swagger.annotations.Api;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by Lenovo on 2020/2/21.
  */
+@Api(value = "上传图片",description = "提供图片上传到了fastDFS")
 public interface FileSystemControllerApi {
     /**
      * 上传文件

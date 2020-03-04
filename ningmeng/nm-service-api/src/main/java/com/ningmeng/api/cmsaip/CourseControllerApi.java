@@ -1,15 +1,14 @@
 package com.ningmeng.api.cmsaip;
 
-import com.ningmeng.framework.domain.course.CourseBase;
-import com.ningmeng.framework.domain.course.CourseMarket;
-import com.ningmeng.framework.domain.course.CoursePic;
-import com.ningmeng.framework.domain.course.Teachplan;
+import com.ningmeng.framework.domain.course.*;
 import com.ningmeng.framework.domain.course.ext.TeachplanNode;
 import com.ningmeng.framework.domain.course.request.CourseListRequest;
+import com.ningmeng.framework.model.response.CoursePublishResult;
 import com.ningmeng.framework.model.response.QueryResponseResult;
 import com.ningmeng.framework.model.response.ResponseResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * Created by Lenovo on 2020/2/18.
@@ -47,4 +46,13 @@ public interface CourseControllerApi {
     public CoursePic findCoursepic(String courseId);
     @ApiOperation("删除课程图片")
     public ResponseResult deleteCoursePic(String courseId);
+
+
+    @ApiOperation("课程视图查询")
+    public CourseView courseview(String id);
+    @ApiOperation("预览课程")
+    public CoursePublishResult preview(String id);
+    @ApiOperation("发布课程")
+    public CoursePublishResult publish(@PathVariable String id);
+
 }

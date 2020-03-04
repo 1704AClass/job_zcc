@@ -4,6 +4,7 @@ import com.ningmeng.api.cmsaip.CmsPageControllerApi;
 import com.ningmeng.framework.domain.cms.CmsPage;
 import com.ningmeng.framework.domain.cms.request.CmsPageResult;
 import com.ningmeng.framework.domain.cms.request.QueryPageRequest;
+import com.ningmeng.framework.model.response.CmsPostPageResult;
 import com.ningmeng.framework.model.response.QueryResponseResult;
 import com.ningmeng.framework.model.response.ResponseResult;
 import com.ningmeng.manage_cms.service.PageService;
@@ -50,11 +51,23 @@ public class CmsPageController implements CmsPageControllerApi {
         return pageService.delete(id);
     }
 
+    //发布页面+rabbitmq
     @Override
     @PostMapping("/postPage/{pageId}")
     public ResponseResult post(@PathVariable("pageId") String pageId) {
         return  pageService.postPage(pageId);
     }
 
+    @Override
+    @PostMapping("/save")
+    public CmsPageResult save(@RequestBody CmsPage cmsPage) {
+        return pageService.save(cmsPage);
+    }
 
+    //一键发布页面
+    @Override
+    @PostMapping("/postPageQuick")
+    public CmsPostPageResult postPageQuick(@RequestBody CmsPage cmsPage) {
+        return null;
+    }
 }

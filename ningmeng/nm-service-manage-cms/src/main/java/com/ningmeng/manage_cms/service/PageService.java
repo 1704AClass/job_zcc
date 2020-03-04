@@ -2,12 +2,14 @@ package com.ningmeng.manage_cms.service;
 
 import com.alibaba.fastjson.JSON;
 import com.ningmeng.framework.domain.cms.CmsPage;
+import com.ningmeng.framework.domain.cms.CmsSite;
 import com.ningmeng.framework.domain.cms.request.CmsPageResult;
 import com.ningmeng.framework.domain.cms.request.QueryPageRequest;
 import com.ningmeng.framework.exception.ExceptionCast;
 import com.ningmeng.framework.model.response.*;
 import com.ningmeng.manage_cms.config.RabbitmqConfig;
 import com.ningmeng.manage_cms.dao.CmsPageRepository;
+import com.ningmeng.manage_cms.dao.CmsSiteRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -27,6 +29,8 @@ public class PageService {
     CmsPageRepository cmsPageRepository;
     @Autowired
     RabbitTemplate rabbitTemplate;
+    @Autowired
+    CmsSiteRepository cmsSiteRepository;
 
     //分页查询
 
@@ -90,7 +94,7 @@ public class PageService {
         return  cmsPageResult;
 
     }
-    //根据id查询页面
+    //根据pageid查询页面
     public CmsPage getById(String id){
         Optional<CmsPage> optional = cmsPageRepository.findById(id);
         if(optional.isPresent()){
@@ -136,7 +140,7 @@ public class PageService {
         sendPostPage(pageId);
         return new ResponseResult(CommonCode.SUCCESS);
     }
-
+    //发布页面
     private void sendPostPage(String pageId) {
         CmsPage cmsPage= this.getById(pageId);
         if(cmsPage == null){
@@ -151,5 +155,60 @@ public class PageService {
         String siteId= cmsPage.getSiteId();
         //发布消息
         this.rabbitTemplate.convertAndSend(RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE,siteId, msg);
+    }
+    //添加页面，如果已存在则更新页面
+    public CmsPageResult save(CmsPage cmsPage){
+        //校验页面是否存在，根据页面名称、站点Id、页面webpath查询
+        CmsPage cmsPage1 =
+                cmsPageRepository.findByPageNameAndSiteIdAndPageWebPath(cmsPage.getPageName(),
+                        cmsPage.getSiteId(), cmsPage.getPageWebPath());
+        if(cmsPage1 !=null){
+            //更新
+            return this.update(cmsPage1.getPageId(),cmsPage);
+        }else{
+            //添加
+            return this.add(cmsPage);
+        }
+    }
+    //一键发布页面
+    public CmsPostPageResult postPageQuick(CmsPage cmsPage){
+        //添加页面
+        CmsPageResult save = this.save(cmsPage);
+        if(!save.isSuccess()){
+            return new CmsPostPageResult(CommonCode.FAIL,null);
+        }
+        CmsPage cmsPage1 = save.getCmsPage();
+        //要布的页面id
+        String pageId = cmsPage1.getPageId();
+        //发布页面
+        ResponseResult responseResult = this.postPage(pageId);
+        if(!responseResult.isSuccess()){
+            return new CmsPostPageResult(CommonCode.FAIL,null);
+        }
+        //得到页面的url
+        //页面url=站点域名+站点webpath+页面webpath+页面名称
+        //站点id
+        String siteId = cmsPage1.getSiteId();
+        //查询站点信息
+        CmsSite cmsSite = findCmsSiteById(siteId);
+        //站点域名
+        String siteDomain = cmsSite.getSiteDomain();
+        //站点web路径
+        String siteWebPath = cmsSite.getSiteWebPath();
+        //页面web路径
+        String pageWebPath = cmsPage1.getPageWebPath();
+        //页面名称
+        String pageName = cmsPage1.getPageName();
+        //页面的web访问地址
+        String pageUrl = siteDomain+siteWebPath+pageWebPath+pageName;
+        return new CmsPostPageResult(CommonCode.SUCCESS,pageUrl);
+    }
+    //根据id查询站点信息
+    public CmsSite findCmsSiteById(String siteId){
+        Optional<CmsSite> optional = cmsSiteRepository.findById(siteId);
+        if(optional.isPresent()){
+            return optional.get();
+        }
+        return null;
     }
 }

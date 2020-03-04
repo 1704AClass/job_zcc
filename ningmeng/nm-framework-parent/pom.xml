@@ -12,7 +12,9 @@
         <module>../nm-service-manage-cms</module>
         <module>../nm-service-manage-course</module>
         <module>../nm-service-base-filesystem</module>
+        <module>../nm-service-manage-media</module>
         <module>../nm-govern-center</module>
+        <module>../nm-service-search</module>
         <module>../test-rabbitmq-consumer</module>
         <module>../test-rabbitmq-producer</module>
     </modules>

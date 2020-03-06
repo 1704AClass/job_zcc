@@ -225,7 +225,6 @@ public class MediaUploadService {
         mediaFile.setFileType(fileExt);//状态为上传成功
         mediaFile.setFileStatus("301002");
         MediaFile save = mediaFileRepository.save(mediaFile);
-        ;
         String mediaId = mediaFile.getFileId();
         //向MQ发送视频处理消息
         sendProcessVideoMsg(mediaId);

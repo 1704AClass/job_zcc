@@ -33,9 +33,9 @@ public class MediaProcessTask {
     @Autowired
     MediaFileRepository mediaFileRepository;
     //视频处理方法
-    @RabbitListener(queues = {"${nm‐service‐manage‐media.mq.queue‐media‐video‐processor}"},
-            containerFactory="customContainerFactory")
-    @RabbitListener(queues = "${nm-service-manage-media.mq.queue-media-video-processor}")
+    //@RabbitListener(queues = {"${nm-service-manage-media.mq.queue-media-video-processor}"}, containerFactory="customContainerFactory")
+
+    @RabbitListener(queues = "${nm-service-manage-media.mq.queue-media-video-processor}",containerFactory="customContainerFactory")
     public void receiveMediaProcessTask(String msg) throws Exception {
         Map msgMap = JSON.parseObject(msg, Map.class);
         LOGGER.info("receive media process task msg :{} ", msgMap);

@@ -21,7 +21,7 @@ public class MediaFileService {
     private static Logger logger = LoggerFactory.getLogger(MediaFileService.class);
     @Autowired
     MediaFileRepository mediaFileRepository;
-    //文件列表查询
+    //文件列表查询从mongdb中获取，分页模糊查询
     public QueryResponseResult findList(int page, int size, QueryMediaFileRequest queryMediaFileRequest){
         //查询条件
         MediaFile mediaFile = new MediaFile();

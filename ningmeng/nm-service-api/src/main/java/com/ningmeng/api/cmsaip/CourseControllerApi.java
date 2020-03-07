@@ -59,4 +59,5 @@ public interface CourseControllerApi {
     @ApiOperation("保存媒资信息")
     public ResponseResult savemedia(TeachplanMedia teachplanMedia);
 
+
 }

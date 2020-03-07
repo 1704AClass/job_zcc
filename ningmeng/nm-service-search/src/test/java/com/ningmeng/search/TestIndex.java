@@ -127,7 +127,7 @@ public class TestIndex {
     //删除文档id
         String id = "9dWagXABGEMh-nVRTlFK";
     //删除索引请求对象
-        DeleteRequest deleteRequest = new DeleteRequest("nm_course","doc",id);
+        DeleteRequest deleteRequest = new DeleteRequest("nm_course","nm_course",id);
     //响应对象
         DeleteResponse deleteResponse = client.delete(deleteRequest);
     //获取响应结果

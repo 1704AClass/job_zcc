@@ -21,10 +21,10 @@ public interface CmsPageClient {
 
 
     //保存页面
-    @PostMapping("/cms/page/save")
+    @PostMapping("/cms/save")
     public CmsPageResult save(@RequestBody CmsPage cmsPage);
 
     //一键发布页面
-    @PostMapping("/cms/page/postPageQuick")
+    @PostMapping("/cms/postPageQuick")
     public CmsPostPageResult postPageQuick(CmsPage cmsPage);
 }

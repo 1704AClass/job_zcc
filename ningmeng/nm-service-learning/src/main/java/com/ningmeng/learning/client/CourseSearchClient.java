@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 /**
  * Created by Lenovo on 2020/3/7.
  */
-@FeignClient(value = "nm‐service‐search")
+@FeignClient(value = "nm-service-search")
 public interface CourseSearchClient {
     @GetMapping(value="/getmedia/{teachplanId}")
     public TeachplanMediaPub getmedia(@PathVariable("teachplanId") String teachplanId);

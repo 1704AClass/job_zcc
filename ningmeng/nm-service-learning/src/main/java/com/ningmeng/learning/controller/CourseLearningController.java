@@ -19,8 +19,7 @@ public class CourseLearningController implements CourseLearningControllerApi {
     LearningService learningService;
     @Override
     @GetMapping("/getmedia/{courseId}/{teachplanId}")
-    public GetMediaResult getmedia(@PathVariable String courseId, @PathVariable String
-            teachplanId) {
+    public GetMediaResult getmedia(@PathVariable String courseId, @PathVariable String  teachplanId) {
         //获取课程学习地址
         return learningService.getMedia(courseId, teachplanId);
     }

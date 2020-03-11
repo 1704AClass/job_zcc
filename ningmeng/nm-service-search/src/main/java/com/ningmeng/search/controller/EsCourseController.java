@@ -25,7 +25,6 @@ public class EsCourseController implements EsCourseControllerApi {
     @Autowired
     EsCourseService esCourseService;
 
-
     @GetMapping("/course/{page}/{size}")
     @Override
     public QueryResponseResult list(@PathVariable("page") int page,@PathVariable("size") int size, CourseSearchParam courseSearchParam) throws IOException {

@@ -287,7 +287,8 @@ public class CourseServicec {
             //创建课程索引信息失败
             ExceptionCast.cast(CourseCode.COURSE_PUBLISH_CREATE_INDEX_ERROR);
         }
-
+        //保存课程计划媒资信息到待索引表
+        saveTeachplanMediaPub(courseId);
         //页面url
         String pageUrl = cmsPostPageResult.getPageUrl();
         return new CoursePublishResult(CommonCode.SUCCESS,pageUrl);
@@ -420,7 +421,7 @@ public class CourseServicec {
     private void saveTeachplanMediaPub(String courseId){
         //查询课程媒资信息
         List<TeachplanMedia> teachplanMediaList = teachplanMediaRepository.findByCourseId(courseId);
-//将课程计划媒资信息存储待索引表
+        //将课程计划媒资信息存储待索引表
         teachplanMediaPubRepository.deleteByCourseId(courseId);
         List<TeachplanMediaPub> teachplanMediaPubList = new ArrayList<>();
         for(TeachplanMedia teachplanMedia:teachplanMediaList){

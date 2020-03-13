@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -14,20 +13,18 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by Lenovo on 2020/3/11.
+ * Created by 1 on 2020/3/11.
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class TestRedis {
     @Autowired
-    RedisTemplate redisTemplate;//基于
-    @Autowired
-    StringRedisTemplate stringRedisTemplate;//基于string
+    private StringRedisTemplate stringRedisTemplate;
     @Test
-    public void testReids(){
+    public void testRedis() {
         //定义key
-        String key = "user_token:9734b68f‐cf5e‐456f‐9bd6‐df578c711390";
-        //定义Map
+        String key = "user_token:";
+        //定义map
         Map<String,String> mapValue = new HashMap<>();
         mapValue.put("id","101");
         mapValue.put("username","ningmeng");

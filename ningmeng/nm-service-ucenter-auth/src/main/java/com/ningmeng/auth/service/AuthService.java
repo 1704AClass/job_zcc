@@ -5,7 +5,8 @@ import com.ningmeng.framework.client.NmServiceList;
 import com.ningmeng.framework.domain.ucenter.ext.AuthToken;
 import com.ningmeng.framework.domain.ucenter.response.AuthCode;
 import com.ningmeng.framework.exception.ExceptionCast;
-import com.sun.xml.internal.messaging.saaj.util.Base64;
+import com.ningmeng.framework.model.response.CommonCode;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,45 +19,42 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Base64Utils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.DefaultResponseErrorHandler;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by Lenovo on 2020/3/11.
- */
 @Service
 public class AuthService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthService.class);
-    //存到reids的过期时间
+
     @Value("${auth.tokenValiditySeconds}")
-    int tokenValiditySeconds;
+    int tokenValiditySeconds;//token存储到redis的过期时间
+
     @Autowired
-    private RestTemplate restTemplate;
+    RestTemplate restTemplate;
     @Autowired
     LoadBalancerClient loadBalancerClient;
     @Autowired
     StringRedisTemplate stringRedisTemplate;
 
-    //认证方法
-    private AuthToken login(String username,String password,String clientId,String clientSecret){
-        //申请令牌
-        AuthToken authToken = applyToken(username, password, clientId, clientSecret);
-        if(authToken == null){
-            ExceptionCast.cast(AuthCode.AUTH_LOGIN_APPLYTOKEN_FAIL);
-        } //将 token存储到redis
-        String access_token = authToken.getAccess_token();
+    public AuthToken login(String username,String password,String clientId,String clientSecret){
+        //1、申请令牌
+        AuthToken authToken = applyToken(username,password,clientId, clientSecret);
+        if(authToken==null){
+            ExceptionCast.cast(AuthCode.AUTH_ACCOUNT_NOTEXISTS);
+        }
+        //2.将令牌保存到redis中
         String content = JSON.toJSONString(authToken);
-        boolean saveTokenResult = saveToken(access_token, content, tokenValiditySeconds);
-        if(!saveTokenResult){
-            ExceptionCast.cast(AuthCode.AUTH_LOGIN_TOKEN_SAVEFAIL);
+        boolean flag = this.saveToken(authToken.getAccess_token(),content,tokenValiditySeconds);
+        if(!flag){
+            ExceptionCast.cast(AuthCode.AUTH_ACCOUNT_NOTEXISTS);
         }
         return authToken;
     }
@@ -70,26 +68,32 @@ public class AuthService {
         Long expire = stringRedisTemplate.getExpire(name);
         return expire>0;
     }
-    //申请令牌
-    private AuthToken applyToken(String username, String password, String clientId, String clientSecret) {
-        //采用客户端负载均衡，从eureka获取认证服务的ip 和端口
-        ServiceInstance serviceInstance =
-                loadBalancerClient.choose(NmServiceList.nm_SERVICE_UCENTER_AUTH);
-        URI uri = serviceInstance.getUri();
-        String path = uri+"/auth/oauth/token";
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        //定义头
-        MultiValueMap<String,String> header = new LinkedMultiValueMap<>();
-        header.add("Authorization", httpbasic(clientId,clientSecret));
-
-        //2、包括：grant_type、username、passowrd
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
+    //认证方法
+    private AuthToken applyToken(String username,String password,String clientId,String clientSecret){
+        //动态从Eureka中获取的认证服务地址
+        ServiceInstance serviceInstance = loadBalancerClient.choose(NmServiceList.nm_SERVICE_UCENTER_AUTH);
+        if(serviceInstance == null){
+            LOGGER.error("choose an auth instance fail");
+            ExceptionCast.cast(AuthCode.AUTH_ACCOUNT_NOTEXISTS);
+        }
+        //获取令牌的url
+        String authUrl = serviceInstance.getUri().toString()+"/auth/oauth/token";
+        //定义body
+        MultiValueMap<String,String> body = new LinkedMultiValueMap();
+        //授权方式
         body.add("grant_type","password");
-        body.add("username","ningmeng");
-        body.add("password","123");
-        HttpEntity<MultiValueMap<String, String>> multiValueMapHttpEntity = new
-                HttpEntity<MultiValueMap<String, String>>(body, headers);
-        //指定 restTemplate当遇到400或401响应时候也不要抛出异常，也要正常返回值
+        //账号
+        body.add("username",username);
+        //密码
+        body.add("password",password);
+        //定义头
+        //heard信息
+        MultiValueMap<String,String> heards = new LinkedMultiValueMap();
+        String httpbasicStr = httpbasic(clientId,clientSecret);
+        heards.add("Authorization",httpbasicStr);
+
+        HttpEntity<MultiValueMap<String,String>> httpEntity = new HttpEntity<>(body,heards);
+        //指定restTemplate当遇到400或401响应时候也不要抛出异常，也要正常返回值
         restTemplate.setErrorHandler(new DefaultResponseErrorHandler(){
             @Override
             public void handleError(ClientHttpResponse response) throws IOException {
@@ -99,41 +103,71 @@ public class AuthService {
                 }
             }
         });
-        Map map = null;
-        try {
-            //http请求spring security的申请令牌接口
-            ResponseEntity<Map> mapResponseEntity = restTemplate.exchange(path, HttpMethod.POST,new HttpEntity<MultiValueMap<String, String>>(body, header), Map.class);
-            map = mapResponseEntity.getBody();
-        } catch (RestClientException e) {
-            e.printStackTrace();
-            LOGGER.error("request oauth_token_password error: {}",e.getMessage());
-            e.printStackTrace();
-            ExceptionCast.cast(AuthCode.AUTH_LOGIN_ERROR);
-        } if(map == null ||
-                map.get("access_token") == null ||
-                map.get("refresh_token") == null ||
-                map.get("jti") == null){//jti是jwt令牌的唯一标识作为用户身份令牌
-            ExceptionCast.cast(AuthCode.AUTH_LOGIN_ERROR);
-        }
-        AuthToken authToken = new AuthToken();
-        //访问令牌(jwt)
-        String jwt_token = (String) map.get("access_token");
-        //刷新令牌(jwt)
-        String refresh_token = (String) map.get("refresh_token");
-        //jti，作为用户的身份标识
-        String access_token = (String) map.get("jti");
+        //http请求spring security的申请令牌接口
+        ResponseEntity<Map> responseEntity = restTemplate.exchange(authUrl, HttpMethod.POST,httpEntity, Map.class);
+        Map body1 = responseEntity.getBody();
+        if(body1==null ||
+                body1.get("access_token") == null ||
+                body1.get("refresh_token") == null ||
+                body1.get("jti") == null){//jti是jwt令牌的唯一标识作为用户身份令牌
 
+            String error_description=(String)body1.get("error_description");
+
+            if(StringUtils.isNotEmpty(error_description)){
+                if("坏的凭证".equals(error_description)){
+                    ExceptionCast.cast(AuthCode.AUTH_CREDENTIAL_ERROR);
+                }else if(error_description.indexOf("UserDetailsService returned null")>=0){
+                    ExceptionCast.cast(AuthCode.AUTH_ACCOUNT_NOTEXISTS);
+                }
+            }
+            ExceptionCast.cast(CommonCode.FAIL);
+        }
+
+        AuthToken authToken = new AuthToken();
+        //访问令牌（jwt)
+        String jwt_token=(String)body1.get("access_token");
+        //刷新令牌(jwt)
+        String refresh_token = (String) body1.get("refresh_token");
+        //jti，作为用户的身份标识
+        String access_token = (String) body1.get("jti");
         authToken.setJwt_token(jwt_token);
         authToken.setAccess_token(access_token);
         authToken.setRefresh_token(refresh_token);
         return authToken;
     }
+
     //获取httpbasic认证串
     private String httpbasic(String clientId,String clientSecret){
         //将客户端id和客户端密码拼接，按“客户端id:客户端密码”
         String string = clientId+":"+clientSecret;
         //进行base64编码
-        byte[] encode = Base64.encode(string.getBytes());
+        byte[] encode = Base64Utils.encode(string.getBytes());
         return "Basic "+new String(encode);
+    }
+
+
+    //二，jwt查询令牌内容
+    public AuthToken getUserToken(String token){
+       String userToken ="user_token:"+token;
+       //取
+       String userTokenString=  stringRedisTemplate.opsForValue().get(userToken);
+       if(userToken!=null){
+           AuthToken authToken = null;
+           try {
+               authToken = JSON.parseObject(userTokenString, AuthToken.class);
+           } catch (Exception e) {
+               LOGGER.error("getUserToken from redis and execute JSON.parseObject error {}",e.getMessage());
+               e.printStackTrace();
+           }
+           return authToken;
+        }
+        return null;
+    }
+
+    //三，退出登陆的时候需要删除redis令牌
+    public Boolean delToken(String access_token){
+        String name = "user_token:" + access_token;
+        stringRedisTemplate.delete(name);
+        return true;
     }
 }

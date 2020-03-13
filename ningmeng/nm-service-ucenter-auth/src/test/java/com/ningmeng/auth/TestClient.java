@@ -4,6 +4,7 @@ import com.ningmeng.framework.client.NmServiceList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -22,42 +23,46 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
-/**
- * Created by Lenovo on 2020/3/11.
- */
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class TestClient {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
     @Autowired
     LoadBalancerClient loadBalancerClient;
-    @Autowired
-    RestTemplate restTemplate;
+
+    @Value("${auth.clientId}")
+    private String clientId;
+    @Value("${auth.clientSecret}")
+    private String clientSecret;
+
+    private String httpbasic(String clientId,String clientSecret){
+        //将客户端id和客户端密码拼接，按“客户端id:客户端密码”
+        String string = clientId+":"+clientSecret;
+        //进行base64编码
+        byte[] encode = Base64Utils.encode(string.getBytes());
+        return "Basic "+new String(encode);
+    }
+
     @Test
     public void testClient(){
-        //采用客户端负载均衡，从eureka获取认证服务的ip 和端口
-        ServiceInstance serviceInstance =
-                loadBalancerClient.choose(NmServiceList.nm_SERVICE_UCENTER_AUTH);
+        //动态从Eureka中获取的认证服务地址
+        ServiceInstance serviceInstance = loadBalancerClient.choose(NmServiceList.nm_SERVICE_UCENTER_AUTH);
         URI uri = serviceInstance.getUri();
         String authUrl = uri+"/auth/oauth/token";
-        //URI url, HttpMethod method, HttpEntity<?> requestEntity, Class<T> responseType
-        // url就是 申请令牌的url /oauth/token
-        //method http的方法类型
-        //requestEntity请求内容
-        //responseType，将响应的结果生成的类型
-        //请求的内容分两部分
-        //1、header信息，包括了http basic认证信息
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        String httpbasic = httpbasic("NmWebApp", "NmWebApp");
-        //"Basic WGNXZWJBcHA6WGNXZWJBcHA="
-        headers.add("Authorization", httpbasic);
-        //2、包括：grant_type、username、passowrd
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
+        //heard信息
+        MultiValueMap<String,String> heards = new LinkedMultiValueMap();
+        String httpbasicStr = httpbasic(clientId,clientSecret);
+        heards.add("Authorization",httpbasicStr);
+        //body信息
+        MultiValueMap<String,String> body = new LinkedMultiValueMap();
         body.add("grant_type","password");
         body.add("username","ningmeng");
         body.add("password","123");
-        HttpEntity<MultiValueMap<String, String>> multiValueMapHttpEntity = new
-                HttpEntity<MultiValueMap<String, String>>(body, headers);
-        //指定 restTemplate当遇到400或401响应时候也不要抛出异常，也要正常返回值
+
+        HttpEntity<MultiValueMap<String,String>> httpEntity = new HttpEntity<>(body,heards);
         restTemplate.setErrorHandler(new DefaultResponseErrorHandler(){
             @Override
             public void handleError(ClientHttpResponse response) throws IOException {
@@ -67,16 +72,15 @@ public class TestClient {
                 }
             }
         });
-        //远程调用申请令牌
-        ResponseEntity<Map> exchange = restTemplate.exchange(authUrl, HttpMethod.POST, multiValueMapHttpEntity, Map.class);
-        Map body1 = exchange.getBody();
-        System.out.println(body1);
+
+        ResponseEntity<Map> responseEntity = restTemplate.exchange(authUrl, HttpMethod.POST,httpEntity, Map.class);
+        System.out.println(responseEntity.getBody());
+        //access_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55SWQiOm51bGwsInVzZXJwaWMiOm51bGwsInVzZXJfbmFtZSI6Im5pbmdtZW5nIiwic2NvcGUiOlsiYXBwIl0sIm5hbWUiOm51bGwsInV0eXBlIjpudWxsLCJpZCI6bnVsbCwiZXhwIjoxNTgzODkyNDcxLCJqdGkiOiIzMDgyZTFlZS1hMzhhLTRkMjYtOWM5OC1hMGQ1OTBkYTljODciLCJjbGllbnRfaWQiOiJObVdlYkFwcCJ9.fXZCVL19aYzKlb8q12rCpCXrsrMi-gJPY1Sk3mAJ_P8WZPXDvomWSb6vAmVbNDHSbpMmjtrLcOVGEEBMUQ7YGoaAgVasM_5Xdpffn3pGNRExFaM7j8fOv7Q3NE2Lj65fV2o8WSQcyLcsUzPN-Vh4UasJCJscUe_FYVNiPeze9uVJklQdhIe_12WAFEmfUehUtrvPj7ft0qyAWX2jG9JgQP6OXf7a7_JcyW3m3VBOMgofwTsFlaUYg8zCV8TikOb3JJAzAbAQWN2BTbmJ6Mr1ZszhOzSyOF5fbbyYGnxEzVXq7oWNOg9gqmi0D_vvHDVVQhfwm-OyQKaGfeQhIjOh-g
+        // , token_type=bearer
+        // , refresh_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55SWQiOm51bGwsInVzZXJwaWMiOm51bGwsInVzZXJfbmFtZSI6Im5pbmdtZW5nIiwic2NvcGUiOlsiYXBwIl0sImF0aSI6IjMwODJlMWVlLWEzOGEtNGQyNi05Yzk4LWEwZDU5MGRhOWM4NyIsIm5hbWUiOm51bGwsInV0eXBlIjpudWxsLCJpZCI6bnVsbCwiZXhwIjoxNTgzODkyNDcxLCJqdGkiOiI4YTc5Y2IxYi1iM2UzLTQxMjctOTU0ZC05ZTA2MzI1YWNlZTAiLCJjbGllbnRfaWQiOiJObVdlYkFwcCJ9.OYx6liNMjjLhOtrkxif_Us8d2cyjn6quoHgU86m_fiTIWz6h4sl6ZP3yGyZI7L-asj3Ap6E5e__wJkRIs26MPlY04DYkZ7NFtVNnBBW0gVToiuhDJRe0sJn-gxVTnxLmUcgAwBF_2-X07BAiArsvRn70DkSkm-giOvBsT-YPt6ys4FwPY848A80UgPyC1Fzoz_zaC01jD1FR85x-o0vGD7PSijE6iohS91jaKqlg6PPdtg2rbtQoCVw9hD85dL5bHPk5UoiyA5qYw7azo8O2jg1Knk29HBqlKLSkhHY8NL-3t8pnEbLG-tKafVWCx7EOm8fIJ6TwvbngMjusZnCOag
+        // , expires_in=43199
+        // , scope=app
+        // , jti=3082e1ee-a38a-4d26-9c98-a0d590da9c87
     }
-    private String httpbasic(String clientId,String clientSecret){
-        //将客户端id和客户端密码拼接，按“客户端id:客户端密码”
-        String string = clientId+":"+clientSecret;
-        //进行base64编码
-        byte[] encode = Base64Utils.encode(string.getBytes());
-        return "Basic "+new String(encode);
-    }
+
 }

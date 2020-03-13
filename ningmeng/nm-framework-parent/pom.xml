@@ -14,6 +14,8 @@
         <module>../nm-service-base-filesystem</module>
         <module>../nm-service-manage-media</module>
         <module>../nm-service-manage-media-processor</module>
+        <module>../nm-service-ucenter</module>
+        <module>../nm-govern-gateway</module>
         <module>../nm-govern-center</module>
         <module>../nm-service-search</module>
         <module>../test-rabbitmq-consumer</module>

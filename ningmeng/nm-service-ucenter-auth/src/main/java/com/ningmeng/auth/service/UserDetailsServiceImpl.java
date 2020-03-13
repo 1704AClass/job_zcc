@@ -1,6 +1,6 @@
 package com.ningmeng.auth.service;
 
-import com.ningmeng.framework.domain.ucenter.NmMenu;
+import com.ningmeng.auth.client.UserClient;
 import com.ningmeng.framework.domain.ucenter.ext.NmUserExt;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
     ClientDetailsService clientDetailsService;
+    @Autowired
+    UserClient userClient;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -41,37 +43,34 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (StringUtils.isEmpty(username)) {
             return null;
         }
-        NmUserExt userext = new NmUserExt();
-        userext.setUsername("ningmeng");
-        userext.setPassword(new BCryptPasswordEncoder().encode("123"));
-        userext.setPermissions(new ArrayList<NmMenu>());
-        if(userext == null){
+        NmUserExt nmUserExt = userClient.getUserext(username);
+        if(nmUserExt == null){
+            //返回NULL表示用户不存在，Spring Security会抛出异常
             return null;
         }
-        //取出正确密码（hash值）
-        String password = userext.getPassword();
-        //这里暂时使用静态密码
-//       String password ="123";
-        //用户权限，这里暂时使用静态数据，最终会从数据库读取
-        //从数据库获取权限
-        List<NmMenu> permissions = userext.getPermissions();
-        List<String> user_permission = new ArrayList<>();
-        permissions.forEach(item-> user_permission.add(item.getCode()));
-//        user_permission.add("course_get_baseinfo");
-//        user_permission.add("course_find_pic");
-        String user_permission_string  = StringUtils.join(user_permission.toArray(), ",");
+        //从数据库查询用户正确的密码，Spring Security会去比对输入密码的正确性
+        String password = nmUserExt.getPassword();
+        //指定用户的权限，这里暂时硬编码
+        List<String> permissionList = new ArrayList<>();
+        permissionList.add("course_get_baseinfo");
+        permissionList.add("course_find_pic");
+       /* String user_permission_string = "";
         UserJwt userDetails = new UserJwt(username,
                 password,
-                AuthorityUtils.commaSeparatedStringToAuthorityList(user_permission_string));
-        userDetails.setId(userext.getId());
-        userDetails.setUtype(userext.getUtype());//用户类型
-        userDetails.setCompanyId(userext.getCompanyId());//所属企业
-        userDetails.setName(userext.getName());//用户名称
-        userDetails.setUserpic(userext.getUserpic());//用户头像
-       /* UserDetails userDetails = new org.springframework.security.core.userdetails.User(username,
+                AuthorityUtils.commaSeparatedStringToAuthorityList(user_permission_string));*/
+        //将权限串中间以逗号分隔
+        String permissionString = StringUtils.join(permissionList.toArray(), ",");
+        UserJwt userDetails = new UserJwt(username,
                 password,
-                AuthorityUtils.commaSeparatedStringToAuthorityList(""));*/
-//                AuthorityUtils.createAuthorityList("course_get_baseinfo","course_get_list"));
+                AuthorityUtils.commaSeparatedStringToAuthorityList(permissionString));
+        //用户id
+        userDetails.setId(nmUserExt.getId());
+        //用户名称
+        userDetails.setName(nmUserExt.getName());
+        //用户头像
+        userDetails.setUserpic(nmUserExt.getUserpic());
+        //用户所属企业id
+        userDetails.setCompanyId(nmUserExt.getCompanyId());
         return userDetails;
     }
 }

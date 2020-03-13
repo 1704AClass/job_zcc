@@ -9,6 +9,7 @@ import com.ningmeng.framework.model.response.QueryResponseResult;
 import com.ningmeng.framework.model.response.ResponseResult;
 import com.ningmeng.manage_course.service.CourseServicec;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -83,6 +84,7 @@ public class CourseController implements CourseControllerApi {
         return courseService.saveCoursePic(courseId, pic);
     }
 
+    @PreAuthorize("hasAuthority('course_find_pic')")
     @Override
     @GetMapping("/coursepic/findCoursepic/{courseId}")
     public CoursePic findCoursepic(@PathVariable("courseId") String courseId) {

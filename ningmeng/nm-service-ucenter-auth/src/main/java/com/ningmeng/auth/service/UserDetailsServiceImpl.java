@@ -1,6 +1,7 @@
 package com.ningmeng.auth.service;
 
 import com.ningmeng.auth.client.UserClient;
+import com.ningmeng.framework.domain.ucenter.NmMenu;
 import com.ningmeng.framework.domain.ucenter.ext.NmUserExt;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.stereotype.Service;
@@ -43,7 +43,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (StringUtils.isEmpty(username)) {
             return null;
         }
+        //根据用户名取出数据
         NmUserExt nmUserExt = userClient.getUserext(username);
+
         if(nmUserExt == null){
             //返回NULL表示用户不存在，Spring Security会抛出异常
             return null;
@@ -52,13 +54,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         String password = nmUserExt.getPassword();
         //指定用户的权限，这里暂时硬编码
         List<String> permissionList = new ArrayList<>();
-        permissionList.add("course_get_baseinfo");
-        permissionList.add("course_find_pic");
+        //手动定义
+       // permissionList.add("course_get_baseinfo");
+        //permissionList.add("course_find_pic");
        /* String user_permission_string = "";
         UserJwt userDetails = new UserJwt(username,
                 password,
                 AuthorityUtils.commaSeparatedStringToAuthorityList(user_permission_string));*/
         //将权限串中间以逗号分隔
+        //从数据库取出来
+        List<NmMenu> permissions = nmUserExt.getPermissions();
         String permissionString = StringUtils.join(permissionList.toArray(), ",");
         UserJwt userDetails = new UserJwt(username,
                 password,

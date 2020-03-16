@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.nio.file.AccessDeniedException;
+
 /**
  * Created by Lenovo on 2020/2/12.
  * ControllerAdvice:是实现全局异常处理，只需要定义类
@@ -49,6 +51,8 @@ public class ExceptionCatch {
     static{
         //在这里加入一些基础的异常类型判断
         builder.put(HttpMessageNotReadableException.class,CommonCode.SERVER_ERROR);
+        //在这里加入一些基础的异常类型判断
+        builder.put(AccessDeniedException.class,CommonCode.UNAUTHORISE);
 
     }
     //捕获CustomException异常

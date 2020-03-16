@@ -15,6 +15,7 @@
         <module>../nm-service-manage-media</module>
         <module>../nm-service-manage-media-processor</module>
         <module>../nm-service-ucenter</module>
+        <module>../nm-service-manage-order</module>
         <module>../nm-govern-gateway</module>
         <module>../nm-govern-center</module>
         <module>../nm-service-search</module>

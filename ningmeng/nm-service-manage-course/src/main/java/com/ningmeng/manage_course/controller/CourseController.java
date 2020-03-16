@@ -83,9 +83,8 @@ public class CourseController implements CourseControllerApi {
         //保存课程图片
         return courseService.saveCoursePic(courseId, pic);
     }
-
-    @PreAuthorize("hasAuthority('course_find_pic')")
     @Override
+    @PreAuthorize("hasAuthority('course_find_pic')")
     @GetMapping("/coursepic/findCoursepic/{courseId}")
     public CoursePic findCoursepic(@PathVariable("courseId") String courseId) {
         return courseService.findCoursepic(courseId);
